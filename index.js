@@ -4,8 +4,8 @@ const admin = require("firebase-admin");
 const app = express();
 app.use(express.json());
 
-// 🔐 Credenciales Firebase
-const serviceAccount = require("./serviceAccountKey.json");
+// 🔐 Leer credenciales desde Railway (variable de entorno)
+const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -35,11 +35,11 @@ app.post("/webhook", async (req, res) => {
 
     await db.collection("news").add(data);
 
-    console.log("Saved to Firestore");
+    console.log("✅ Saved to Firestore");
 
     res.sendStatus(200);
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error:", error);
     res.sendStatus(500);
   }
 });
@@ -48,6 +48,9 @@ app.get("/", (req, res) => {
   res.send("Webhook running");
 });
 
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
+// 🔥 PUERTO DINÁMICO (clave para Railway)
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`🔥 Server running on port ${PORT}`);
 });
