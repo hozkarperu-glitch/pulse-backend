@@ -7,7 +7,15 @@ app.use(express.json());
 
 const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
-const FIREBASE_BUCKET = process.env.FIREBASE_BUCKET;
+const FIREBASE_BUCKET = process.env.FIREBASE_BUCKET?.trim();
+
+if (!TELEGRAM_TOKEN) {
+  throw new Error("TELEGRAM_TOKEN is missing");
+}
+
+if (!FIREBASE_BUCKET) {
+  throw new Error("FIREBASE_BUCKET is missing");
+}
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -15,7 +23,9 @@ admin.initializeApp({
 });
 
 const db = admin.firestore();
-const bucket = admin.storage().bucket();
+const bucket = admin.storage().bucket(FIREBASE_BUCKET);
+
+console.log("Using bucket:", FIREBASE_BUCKET);
 
 async function getTelegramFileUrl(fileId) {
   const fileRes = await fetch(
@@ -122,5 +132,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-
